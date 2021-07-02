@@ -3,15 +3,12 @@ defmodule Xcribe.Application do
 
   use Application
 
-  alias Xcribe.CLI.Output
-  alias Xcribe.Config
-
   @doc false
   def start(_type, opts) do
-    case Config.check_configurations([:serving?]) do
-      {:error, errors} -> Output.print_configuration_errors(errors)
-      :ok -> :ok
-    end
+    # case Config.check_configurations([:serving?]) do
+    #   {:error, errors} -> Output.print_configuration_errors(errors)
+    #   :ok -> :ok
+    # end
 
     opts
     |> Keyword.get(:children, [])
@@ -20,9 +17,6 @@ defmodule Xcribe.Application do
   end
 
   defp xcribe_children do
-    [
-      {Xcribe.Config, []},
-      {Xcribe.Recorder, []}
-    ]
+    [{Xcribe.Recorder, []}]
   end
 end

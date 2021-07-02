@@ -7,6 +7,10 @@ defmodule Xcribe.Swagger.FormatterTest do
   alias Xcribe.Support.Samples.SwaggerFormater.PathItemObject, as: Samples
   alias Xcribe.Swagger.Formatter
 
+  setup do
+    {:ok, %{config: %{information_source: Xcribe.Support.Information, json_library: Jason}}}
+  end
+
   describe "raw_openapi_object/0" do
     test "return an empty OpenAPI object" do
       expected = %{
@@ -47,8 +51,11 @@ defmodule Xcribe.Swagger.FormatterTest do
   end
 
   describe "path_item_object_from_request/1" do
-    test "return a basic struch with the path item and parameters from a request" do
+    test "return a basic struch with the path item and parameters from a request", %{
+      config: config
+    } do
       request = %Request{
+        __meta__: %{config: config},
         header_params: [
           {"authorization", "token"},
           {"content-type", "application/json; charset=utf-8"}
@@ -117,8 +124,9 @@ defmodule Xcribe.Swagger.FormatterTest do
       assert Formatter.path_item_object_from_request(request) == expected
     end
 
-    test "with request body" do
+    test "with request body", %{config: config} do
       request = %Request{
+        __meta__: %{config: config},
         header_params: [{"content-type", "application/json; charset=utf-8"}],
         path_params: %{},
         request_body: %{"name" => "Jonny"},
@@ -171,8 +179,9 @@ defmodule Xcribe.Swagger.FormatterTest do
   end
 
   describe "response_object_from_request/1" do
-    test "return a response object" do
+    test "return a response object", %{config: config} do
       request = %Request{
+        __meta__: %{config: config},
         resp_body: "[{\"id\":1,\"name\":\"user 1\"},{\"id\":2,\"name\":\"user 2\"}]",
         resp_headers: [
           {"content-type", "application/json; charset=utf-8"},
@@ -202,8 +211,9 @@ defmodule Xcribe.Swagger.FormatterTest do
       assert Formatter.response_object_from_request(request) == expected
     end
 
-    test "when has a 204 with no content" do
+    test "when has a 204 with no content", %{config: config} do
       request = %Request{
+        __meta__: %{config: config},
         resp_body: "",
         resp_headers: [
           {"content-type", "application/json; charset=utf-8"},

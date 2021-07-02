@@ -90,5 +90,7 @@ defmodule Xcribe.ConnParser do
 
   defp transform_param(param, path), do: String.replace(path, ":#{param}", "{#{param}}")
 
-  defp fetch_namespaces, do: apply(Config.fetch!(:xcribe_information_source), :namespaces, [])
+  # TODO: olhar aqui
+  defp fetch_namespaces, do: []
+  # defp fetch_namespaces, do: apply(Config.fetch!(:xcribe_information_source), :namespaces, [])
 end

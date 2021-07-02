@@ -89,16 +89,16 @@ defmodule Xcribe.ApiBlueprint.Formatter do
     |> Enum.reduce(%{}, &reduce_path_params/2)
   end
 
-  def response_schema(%Request{resp_body: body, resp_headers: headers}) do
-    headers
-    |> content_type()
-    |> json_schema_for(body)
+  def response_schema(%Request{__meta__: meta, resp_body: body, resp_headers: headers}) do
+    content_type = content_type(headers)
+
+    json_schema_for(content_type, response_content(body, content_type, meta))
   end
 
-  def response_body(%Request{resp_body: body, resp_headers: headers}) do
+  def response_body(%Request{__meta__: %{config: config}, resp_body: body, resp_headers: headers}) do
     case content_type(headers) do
       nil -> %{}
-      content_type -> ContentDecoder.decode!(body, content_type)
+      content_type -> ContentDecoder.decode!(body, content_type, config)
     end
   end
 
@@ -194,9 +194,6 @@ defmodule Xcribe.ApiBlueprint.Formatter do
   defp capitalize_all_words(string),
     do: Enum.reduce(String.split(string, "_"), "", &"#{&2}#{String.capitalize(&1)} ")
 
-  defp json_schema_for("application/json" = type, body) when is_binary(body),
-    do: json_schema_for(type, ContentDecoder.decode!(body, type))
-
   defp json_schema_for("application/json", body) when is_map(body) or is_list(body),
     do: JsonSchema.schema_for(body)
 
@@ -252,6 +249,11 @@ defmodule Xcribe.ApiBlueprint.Formatter do
 
   defp add_required(map, true), do: Map.put(map, :required, true)
   defp add_required(map, false), do: map
+
+  defp response_content(body, "application/json", %{config: config}) when is_binary(body),
+    do: ContentDecoder.decode!(body, "application/json", config)
+
+  defp response_content(body, _content_type, _meta), do: body
 
   defp url_params(path) do
     case Regex.run(~r/\{(.*?)\}.+/, path, capture: :all_but_first) do
